@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>El jardín de Morito 🌻🖤 (con Morrón)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#d97757;
+    --sky-mid:#f0b37e;
+    --sky-bottom:#fce8c3;
+    --sun:#fff4d1;
+    --grass-mid:#7cb342;
+    --cat-body:#171717;
+    --cat-line:#090909;
+    --wood:#8c562b;
+    --wood-dark:#5e3818;
+    --cream-text:#fff8ea;
+  }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+  html,body{
+    margin:0; padding:0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100vw;
+    max-width: 100%;
+    position: relative;
+    overflow: auto;
+    font-family:'Baloo 2', sans-serif;
+    background: linear-gradient(180deg, #f7d8a8 0%, #e6c99d 100%);
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-text-size-adjust: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .scene{
+    position:relative; width:100%; height:100%;
+    max-width: 480px;
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-bottom) 70%);
+    overflow:hidden; user-select:none;
+    touch-action: pan-y;
+    pointer-events: auto;
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 18px 50px rgba(79, 45, 18, 0.18);
+  }
+  
+  .sun-glow{
+    position:absolute; top:-50px; right:10%; width:300px; height:300px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,244,209,0.8) 0%, rgba(240,179,126,0.3) 50%, rgba(0,0,0,0) 70%);
+    pointer-events:none;
+  }
+  .sun{
+    position:absolute; top:8%; right:14%; width:90px; height:90px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff, var(--sun) 60%, #ffe082 100%);
+    box-shadow: 0 0 40px 15px rgba(255,224,130,0.6);
+  }
+  .cloud{ position:absolute; opacity:.75; filter:drop-shadow(0 4px 6px rgba(139,69,19,0.15)); pointer-events:none; }
+  .cloud svg{ width:100%; height:100%; }
+  .cloud.c1{ top:5%; left:-100px; width:140px; height:55px; animation: drift 45s linear infinite; }
+  .cloud.c2{ top:14%; left:-100px; width:100px; height:40px; animation: drift 60s linear infinite 15s; }
+  @keyframes drift{ from{ transform:translateX(-100px);} to{ transform:translateX(calc(100vw + 200px));} }
+
+  .sign{
+    position:absolute; top: calc(10px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%) rotate(-1deg);
+    background: linear-gradient(180deg, var(--wood), var(--wood-dark));
+    padding: 10px 14px 12px; border-radius:16px;
+    box-shadow: 0 5px 0 rgba(0,0,0,.15), 0 8px 16px rgba(0,0,0,.2);
+    text-align:center; border: 2px solid #a36b3b; z-index: 999999;
+    max-width: min(90vw, 360px);
+    width: min(90vw, 360px);
+  }
+  .sign h1{
+    margin:0; font-size: clamp(15px, 4.3vw, 22px); color: var(--cream-text);
+    font-weight:700; letter-spacing:.2px; text-shadow: 1px 1px 2px rgba(0,0,0,.4);
+    line-height: 1.2;
+  }
+  .sign p{ margin:5px 0 0; font-size: clamp(10px, 2.7vw, 12px); color: #ffe082; font-weight:600; }
+
+  .world-viewport{
+    position:absolute; left:0; right:0; bottom:0; top: max(78px, 15%);
+    overflow:hidden; border-top: 4px solid rgba(76,128,45,0.9); border-left: 4px solid rgba(76,128,45,0.8); border-right: 4px solid rgba(76,128,45,0.8); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.18), inset 0 10px 18px rgba(26,72,19,0.12);
+  }
+  .world-viewport::before{
+    content:""; position:absolute; inset: 0; pointer-events:none;
+    border: 2px solid rgba(255,255,255,0.25); border-radius: 0 0 12px 12px; z-index: 3;
+  }
+  .world-layer{ 
+    position:absolute; 
+    width: 300vw; 
+    height: 300vh; 
+    left: 0; 
+    top: 0; 
+    will-change: transform;
+  }
+
+  .bg-grass{
+    position:absolute; left:0; right:0; top:0; bottom:0;
+    background-color: #7cb342;
+    background-image: 
+      radial-gradient(circle at 20% 30%, #8bc34a 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, #689f38 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, #7cb342 0%, transparent 60%),
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><path d="M10 35 L12 25 M12 35 L17 22 M28 38 L30 26 M30 38 L34 28" stroke="%23558b2f" stroke-width="2" stroke-linecap="round"/></svg>');
+    background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px;
+    box-shadow: inset 0 18px 20px rgba(41,91,27,0.18), inset 0 -12px 18px rgba(58,108,30,0.15);
+  }
+
+  .dirt-road-h{
+    position:absolute; top: 50%; left: 0; width: 100%; height: 75px;
+    background: #a47547; transform: translateY(-50%);
+    border-top: 4px dashed #875c33; border-bottom: 4px dashed #875c33; opacity: 0.95;
+  }
+  .dirt-road-v{
+    position:absolute; left: 50%; top: 0; height: 100%; width: 75px;
+    background: #a47547; transform: translateX(-50%);
+    border-left: 4px dashed #875c33; border-right: 4px dashed #875c33; opacity: 0.95;
+  }
+
+  .item-world{ position:absolute; transform-origin: 50% 100%; pointer-events:none; }
+  .item-world.clickable { pointer-events: auto; cursor: pointer; }
+  .item-world .sway{ transform-origin: 50% 95%; animation: sway 3.5s ease-in-out infinite; }
+  .item-world:nth-child(2n) .sway{ animation-duration: 4.2s; animation-delay: -0.7s; }
+  .item-world:nth-child(3n) .sway{ animation-duration: 3.1s; animation-delay: -1.4s; }
+  @keyframes sway{ 0%,100%{ transform: rotate(-3deg); } 50%{ transform: rotate(3deg); } }
+
+  .cat{
+    position:absolute; width:120px; height:120px;
+    top: 50%; left: 50%; transform: translate(-50%, -85%);
+    will-change: transform, z-index;
+  }
+  .cat svg{ width:100%; height:100%; overflow:visible; filter: drop-shadow(0 4px 3px rgba(0,0,0,.25)); }
+  .cat::after{
+    content:""; position:absolute; left:15%; bottom:2px; width:70%; height:10px;
+    border-radius:50%; background:rgba(0,0,0,.25); filter:blur(3px); z-index:-1;
+  }
+
+  .cat-view{ display: none; width: 100%; height: 100%; }
+  .cat[data-dir="side"] .view-side{ display: block; }
+  .cat[data-dir="front"] .view-front{ display: block; }
+  .cat[data-dir="back"] .view-back{ display: block; }
+  .cat[data-dir="bread"] .view-bread{ display: block; }
+
+  .tail-side{ transform-origin: 20px 55px; animation: wag 1.6s ease-in-out infinite; }
+  .tail-back{ transform-origin: 45px 65px; animation: wagBack 1.4s ease-in-out infinite; }
+  @keyframes wag{ 0%,100%{ transform: rotate(-8deg); } 50%{ transform: rotate(10deg); } }
+  @keyframes wagBack{ 0%,100%{ transform: rotate(-12deg); } 50%{ transform: rotate(12deg); } }
+
+  .walking .tail-side, .walking .tail-back{ animation-duration: .45s; }
+  .leg{ transform-origin: center top; }
+  .leg-fl, .leg-br{ animation: legA .35s ease-in-out infinite; }
+  .leg-fr, .leg-bl{ animation: legB .35s ease-in-out infinite; }
+  .cat:not(.walking) .leg{ animation: none !important; transform: none !important; }
+  @keyframes legA{ 0%,100%{ transform: rotate(16deg); } 50%{ transform: rotate(-16deg); } }
+  @keyframes legB{ 0%,100%{ transform: rotate(-16deg); } 50%{ transform: rotate(16deg); } }
+
+  .bubble{
+    position:absolute; left:50%; top:-35px; transform:translateX(-50%) scale(0);
+    background:#fff; border-radius:12px; padding:4px 12px; font-size:16px; font-weight:700; color:#3a240e;
+    box-shadow:0 3px 8px rgba(0,0,0,.15); transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    pointer-events:none; white-space:nowrap; z-index: 999999;
+  }
+  .bubble.show{ transform:translateX(-50%) scale(1); }
+
+  .hint{
+    position:absolute; left:50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    max-width: min(78vw, 360px);
+    color:#3a240e; background: rgba(255,255,255,.92);
+    padding:8px 18px; border-radius:999px; font-size:13px; font-weight:700; line-height:1.35;
+    backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 999999; text-align:center;
+  }
+
+  .bouquet-panel{
+    position:absolute;
+    top: calc(12px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
+    z-index: 999999;
+    display:none !important;
+    align-items:center;
+    gap:8px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius:999px;
+    box-shadow: 0 5px 12px rgba(0,0,0,.12);
+    padding: 7px 10px 7px 8px;
+    max-width: 42vw;
+  }
+  .bouquet-visual{
+    position:relative;
+    width: 36px; height: 36px;
+    display: flex; align-items: flex-end; justify-content:center;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.15));
+  }
+  .bouquet-visual .stem{
+    position:absolute; bottom:0; width: 3px; height: 18px; background: #4e8f3b; border-radius: 999px;
+    transform: translateX(2px);
+  }
+  .bouquet-visual .flower{
+    position:absolute; bottom: 15px; width: 11px; height: 11px; background: #ffd54a;
+    border-radius: 50%; border: 2px solid #ffc107;
+    box-shadow: 0 0 0 2px rgba(255,221,87,0.22);
+  }
+  .bouquet-visual .flower.f1{ left: 4px; }
+  .bouquet-visual .flower.f2{ left: 12px; bottom: 18px; }
+  .bouquet-visual .flower.f3{ right: 8px; bottom: 17px; }
+  .bouquet-visual .flower.f4{ left: 18px; bottom: 12px; }
+  .bouquet-visual .flower.f5{ right: 4px; bottom: 11px; }
+  .bouquet-meta{
+    display:flex; flex-direction:column; line-height:1;
+    color: #4a2d10; font-weight: 800;
+    min-width: 0;
+  }
+  .bouquet-meta span{ font-size: 8px; text-transform: uppercase; letter-spacing:.08em; }
+  .bouquet-meta strong{ font-size: 15px; }
+
+  .bouquet-gift{
+    position:absolute;
+    left:50%;
+    top: 58%;
+    width: 220px;
+    height: 210px;
+    transform: translate(-50%, 30px) scale(0.5);
+    opacity: 0;
+    pointer-events:none;
+    z-index: 99999;
+    transition: all .5s cubic-bezier(.22,1,.36,1);
+    filter: drop-shadow(0 14px 18px rgba(68,36,8,0.22));
+  }
+  .bouquet-gift.show{
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  .bouquet-gift svg{
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .bouquet-gift .paper-wrap {
+    fill: #f7e9bf;
+    stroke: rgba(120, 82, 28, 0.18);
+    stroke-width: 2;
+  }
+  .bouquet-gift .paper-ribbon {
+    fill: #ef9eb2;
+    stroke: rgba(146, 77, 80, 0.25);
+    stroke-width: 2;
+  }
+  .bouquet-gift .stem {
+    stroke: #367c42;
+    stroke-width: 7;
+    stroke-linecap: round;
+    fill: none;
+  }
+  .bouquet-gift .leaf {
+    fill: #6eaf5d;
+    stroke: rgba(37, 98, 42, 0.35);
+    stroke-width: 1.6;
+  }
+  .bouquet-gift .flower-petal {
+    fill: url(#petalGradient);
+    stroke: #d79d0a;
+    stroke-width: 1.2;
+  }
+  .bouquet-gift .flower-center {
+    fill: #fff1a2;
+    stroke: #c48b00;
+    stroke-width: 2;
+  }
+  .bouquet-gift .tiny-bud {
+    fill: #f8d45f;
+    stroke: #d79d0a;
+    stroke-width: 1.2;
+  }
+
+  @media (max-width: 560px){
+    .hint{
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      max-width: min(64vw, 280px);
+      bottom: calc(94px + env(safe-area-inset-bottom));
+      font-size: 12px;
+      padding: 7px 12px;
+    }
+    .bouquet-panel{
+      top: calc(10px + env(safe-area-inset-top));
+      right: 10px;
+      padding: 7px 10px 7px 8px;
+    }
+    .bouquet-icon{ width: 24px; height:24px; font-size:14px; }
+    .bouquet-meta strong{ font-size: 16px; }
+  }
+
+  @media (min-width: 820px){
+    body {
+      background: linear-gradient(180deg, #f3d7a1 0%, #dcae74 100%);
+      padding: 18px 0;
+      overflow: hidden;
+    }
+    .scene {
+      width: min(100vw - 32px, 430px);
+      height: min(94vh, 900px);
+      max-height: 900px;
+      border-radius: 30px;
+      border: 6px solid rgba(122, 77, 48, 0.4);
+      box-shadow: 0 22px 60px rgba(75, 48, 22, 0.25);
+    }
+  }
+
+  /* PAD CORREGIDO: Distribución correcta en cruz simétrica */
+  .pad{
+    position:absolute;
+    right: calc(14px + env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    z-index:999999;
+    display:grid; 
+    grid-template-columns: 52px 52px 52px; 
+    grid-template-rows: 52px 52px 52px; 
+    gap:4px; 
+    opacity:.92;
+    touch-action: manipulation;
+  }
+  .pad button{
+    border:none; border-radius:14px;
+    background: rgba(255,255,255,.92); color:#3a240e; font-size:20px; font-weight:bold;
+    box-shadow:0 4px 0 rgba(0,0,0,.15); touch-action: manipulation;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none; pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (max-width: 380px){
+    .pad{
+      grid-template-columns: 44px 44px 44px; grid-template-rows: 44px 44px 44px;
+      gap:3px;
+      right: 10px;
+      bottom: 10px;
+    }
+    .pad button{ font-size:16px; border-radius:12px; }
+  }
+  .pad button:active{ transform: translateY(2px) scale(0.98); box-shadow:none; }
+  
+  /* Posicionamiento explícito de la cruceta para que Arriba quede arriba de verdad */
+  .p-up { grid-column: 2; grid-row: 1; }
+  .p-left { grid-column: 1; grid-row: 2; }
+  .p-down { grid-column: 2; grid-row: 3; }
+  .p-right { grid-column: 3; grid-row: 2; }
+
+  .butterfly {
+    position: absolute; width: 25px; height: 25px; z-index: 9999; pointer-events: auto; cursor: pointer;
+    animation: fly 12s ease-in-out infinite alternate;
+  }
+  @keyframes fly {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(80px, -60px) rotate(15deg); }
+    50% { transform: translate(160px, 20px) rotate(-10deg); }
+    75% { transform: translate(60px, 100px) rotate(20deg); }
+    100% { transform: translate(-40px, 40px) rotate(-5deg); }
+  }
+
+  #morron {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    opacity: 0; 
+    transform: translate(-50%, -40%) scale(0.8);
+    pointer-events: auto; cursor: pointer;
+  }
+  #morron.visible { 
+    opacity: 1; 
+    transform: translate(-50%, -90%) scale(1);
+  }
+
+  @media (min-width: 820px){ .pad{ display: none; } }
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="sun-glow"></div>
+  <div class="sun"></div>
+  <div class="cloud c1"><svg viewBox="0 0 100 40"><ellipse cx="25" cy="25" rx="25" ry="15" fill="#fff"/><ellipse cx="55" cy="18" rx="22" ry="18" fill="#fff"/><ellipse cx="80" cy="26" rx="18" ry="13" fill="#fff"/></svg></div>
+  <div class="cloud c2"><svg viewBox="0 0 100 40"><ellipse cx="25" cy="25" rx="22" ry="13" fill="#fff"/><ellipse cx="55" cy="18" rx="18" ry="15" fill="#fff"/><ellipse cx="78" cy="24" rx="15" ry="11" fill="#fff"/></svg></div>
+
+  <div class="sign">
+    <h1>Jardín de Morito</h1>
+    <p>Un paseo por el jardín de Morito</p>
+  </div>
+
+  <div class="world-viewport" id="viewport">
+    <div class="world-layer" id="world">
+      <div class="bg-grass"></div>
+      <div class="dirt-road-h"></div>
+      <div class="dirt-road-v"></div>
+      <div id="elements-holder"></div>
+
+      <!-- Gato Principal (Morito) - Tamaño ajustado y armónico -->
+      <div class="cat" id="cat" data-dir="front">
+        <div class="bubble" id="bubble">🖤</div>
+
+        <!-- Vista Lateral -->
+        <svg class="cat-view view-side" viewBox="0 0 140 120">
+          <path class="tail-side" d="M18 78 C2 70, 5 45, 18 40 C28 37, 32 45, 26 53 C20 60, 14 65, 24 71" fill="none" stroke="var(--cat-body)" stroke-width="11" stroke-linecap="round"/>
+          <g class="body-wrap">
+            <ellipse cx="75" cy="74" rx="46" ry="29" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <path d="M98 52 C90 63 90 76 94 83 C98 90 105 94 112 95 C117 95 122 89 123 83 C125 74 123 63 118 57 Z" fill="#ffffff"/>
+            <path d="M109 71 C106 66 101 68 103 73 C104 78 109 82 109 82 C109 82 114 78 115 73 C117 68 112 66 109 71 Z" fill="#171717"/>
+            
+            <g class="leg leg-fl"><rect x="100" y="82" width="13" height="25" rx="6.5" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="106.5" cy="106" rx="7" ry="4" fill="#ffffff"/></g>
+            <g class="leg leg-fr"><rect x="83" y="85" width="13" height="23" rx="6.5" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="89.5" cy="107" rx="7" ry="4" fill="#ffffff"/></g>
+            <g class="leg leg-bl"><rect x="38" y="82" width="13" height="25" rx="6.5" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="44.5" cy="106" rx="7" ry="4" fill="#ffffff"/></g>
+            <g class="leg leg-br"><rect x="56" y="85" width="13" height="23" rx="6.5" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="62.5" cy="107" rx="7" ry="4" fill="#ffffff"/></g>
+            
+            <circle cx="112" cy="38" r="31" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <path d="M88 23 L80 3 L104 15 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <path d="M120 15 L140 0 L134 25 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <ellipse cx="98" cy="40" rx="6" ry="8" fill="#f5d76e" stroke="#0c0c0c" stroke-width="1.5"/>
+            <ellipse cx="124" cy="40" rx="6" ry="8" fill="#f5d76e" stroke="#0c0c0c" stroke-width="1.5"/>
+            <ellipse cx="99" cy="41" rx="1.8" ry="6" fill="#0a0a0a"/>
+            <ellipse cx="125" cy="41" rx="1.8" ry="6" fill="#0a0a0a"/>
+            <path d="M112 48 L108 44 L116 44 Z" fill="#e9a4af"/>
+          </g>
+        </svg>
+
+        <!-- Vista Frontal -->
+        <svg class="cat-view view-front" viewBox="0 0 100 120">
+          <g class="body-wrap">
+            <g class="leg leg-fl"><rect x="22" y="82" width="14" height="28" rx="7" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="29" cy="109" rx="7" ry="4" fill="#ffffff"/></g>
+            <g class="leg leg-fr"><rect x="64" y="82" width="14" height="28" rx="7" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="71" cy="109" rx="7" ry="4" fill="#ffffff"/></g>
+            <ellipse cx="50" cy="80" rx="34" ry="26" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <path d="M 24,58 C 24,46 76,46 76,58 C 76,96 50,104 50,104 C 50,104 24,96 24,58 Z" fill="#ffffff" stroke="#d0d0d0" stroke-width="1.5"/>
+            <path d="M50 90 C44 84 37 79 37 70 C37 60 44 54 50 60 C56 54 63 60 63 70 C63 79 56 84 50 90 Z" fill="#080808" stroke="#000000" stroke-width="2"/>
+            <path d="M50 86 C46 82 42 79 42 73 C42 68 45 65 49 68 C50 69 50 70 50 70 C50 70 50 69 51 68 C55 65 58 68 58 73 C58 79 54 82 50 86 Z" fill="#2f2f2f" opacity="0.85"/>
+
+            <g class="head-group" transform="translate(0, 10)">
+              <circle cx="50" cy="30" r="30" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+              <path d="M24 12 L10 -8 L35 4 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M76 12 L90 -8 L65 4 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M25 10 L15 -4 L32 5 Z" fill="#5a5a5a" opacity=".6"/>
+              <path d="M75 10 L85 -4 L68 5 Z" fill="#5a5a5a" opacity=".6"/>
+              <ellipse cx="35" cy="30" rx="7" ry="9" fill="#f5d76e" stroke="#0c0c0c" stroke-width="1.5"/>
+              <ellipse cx="65" cy="30" rx="7" ry="9" fill="#f5d76e" stroke="#0c0c0c" stroke-width="1.5"/>
+              <ellipse cx="35" cy="31" rx="2.5" ry="7" fill="#0a0a0a"/>
+              <ellipse cx="65" cy="31" rx="2.5" ry="7" fill="#0a0a0a"/>
+              <circle cx="33" cy="27" r="1.8" fill="#fff"/>
+              <circle cx="63" cy="27" r="1.8" fill="#fff"/>
+              <path d="M50 40 L45 35 L55 35 Z" fill="#e9a4af"/>
+              <g stroke="#f4eee8" stroke-width="1.5" stroke-linecap="round" opacity=".8">
+                <line x1="30" y1="39" x2="10" y2="36"/><line x1="30" y1="43" x2="12" y2="45"/>
+                <line x1="70" y1="39" x2="90" y2="36"/><line x1="70" y1="43" x2="88" y2="45"/>
+              </g>
+            </g>
+
+          </g>
+        </svg>
+
+        <!-- Vista Trasera -->
+        <svg class="cat-view view-back" viewBox="0 0 100 110">
+          <path class="tail-back" d="M45 70 C35 50, 65 35, 50 20" fill="none" stroke="var(--cat-body)" stroke-width="9" stroke-linecap="round"/>
+          <g class="body-wrap">
+            <ellipse cx="50" cy="72" rx="30" ry="24" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <g class="leg leg-bl"><rect x="28" y="78" width="13" height="24" rx="6.5" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="34.5" cy="101" rx="6.5" ry="3.5" fill="#ffffff"/></g>
+            <g class="leg leg-br"><rect x="59" y="78" width="13" height="24" rx="6.5" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2"/><ellipse cx="65.5" cy="101" rx="6.5" ry="3.5" fill="#ffffff"/></g>
+            <g transform="translate(0, 8)">
+              <circle cx="50" cy="34" r="30" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+              <path d="M24 16 L10 -4 L35 8 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M76 16 L90 -4 L65 8 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5" stroke-linejoin="round"/>
+            </g>
+          </g>
+        </svg>
+
+        <!-- MODO PAN -->
+        <svg class="cat-view view-bread" viewBox="0 0 110 90">
+          <ellipse cx="55" cy="54" rx="38" ry="24" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+          <path d="M 37 42 Q 55 48 73 42 C 78 68 32 68 37 42 Z" fill="#ffffff" stroke="var(--cat-line)" stroke-width="1.5"/>
+          <path d="M 55,62 C 55,62 48,55 48,49 C 48,45 51,43 53,46 C 55,48 55,48 55,48 C 55,48 55,48 57,46 C 59,43 62,45 62,49 C 62,55 55,62 55,62 Z" fill="#171717"/>
+          <ellipse cx="44" cy="73" rx="8" ry="4" fill="#ffffff" stroke="var(--cat-line)" stroke-width="1.5"/>
+          <ellipse cx="66" cy="73" rx="8" ry="4" fill="#ffffff" stroke="var(--cat-line)" stroke-width="1.5"/>
+          <g transform="translate(5, 4)">
+            <circle cx="50" cy="32" r="26" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.5"/>
+            <path d="M28 16 L16 -2 L36 6 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M72 16 L84 -2 L64 6 Z" fill="var(--cat-body)" stroke="var(--cat-line)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M 34 32 Q 39 36 44 32" fill="none" stroke="#f5d76e" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M 56 32 Q 61 36 66 32" fill="none" stroke="#f5d76e" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M 50 38 L 47 34 L 53 34 Z" fill="#e9a4af"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- MORRÓN -->
+      <div class="cat" id="morron" data-dir="front">
+        <div class="bubble" id="bubble-morron">mmrron</div>
+        <svg class="cat-view view-front" viewBox="0 0 100 120" style="display:block;">
+          <g class="body-wrap">
+            <g class="leg"><rect x="22" y="82" width="14" height="28" rx="7" fill="#8c755c" stroke="#3d3023" stroke-width="2"/><ellipse cx="29" cy="109" rx="7" ry="4" fill="#e3dac9"/></g>
+            <g class="leg"><rect x="64" y="82" width="14" height="28" rx="7" fill="#8c755c" stroke="#3d3023" stroke-width="2"/><ellipse cx="71" cy="109" rx="7" ry="4" fill="#e3dac9"/></g>
+            
+            <ellipse cx="50" cy="80" rx="34" ry="26" fill="#7a654d" stroke="#3a2f22" stroke-width="2.5"/>
+            
+            <path d="M 20 75 Q 35 78 18 86 M 80 75 Q 65 78 82 86 M 50 62 L 50 74" stroke="#3a2d1d" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M 22 66 Q 32 70 20 74 M 78 66 Q 68 70 80 74" stroke="#2b2014" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+            <path d="M 30,64 C 30,52 70,52 70,64 C 70,92 50,98 50,98 C 50,98 30,92 30,64 Z" fill="#e6dbc9" stroke="#b3a692" stroke-width="1.2"/>
+
+            <g class="head-group" transform="translate(0, 10)">
+              <circle cx="50" cy="30" r="30" fill="#7a654d" stroke="#3a2f22" stroke-width="2.5"/>
+              
+              <path d="M 40 6 L 50 16 L 60 6 M 44 12 L 50 20 L 56 12" stroke="#2b2014" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M 24 24 Q 30 26 22 30 M 76 24 Q 70 26 78 30" stroke="#2b2014" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+              <path d="M24 12 L10 -8 L35 4 Z" fill="#66533e" stroke="#3a2f22" stroke-width="2.5"/>
+              <path d="M76 12 L90 -8 L65 4 Z" fill="#66533e" stroke="#3a2f22" stroke-width="2.5"/>
+              <path d="M25 10 L16 -4 L32 5 Z" fill="#c49b8b" opacity=".7"/>
+              <path d="M75 10 L84 -4 L68 5 Z" fill="#c49b8b" opacity=".7"/>
+
+              <ellipse cx="35" cy="30" rx="7" ry="8.5" fill="#a4b359" stroke="#1f1810" stroke-width="1.5"/>
+              <ellipse cx="65" cy="30" rx="7" ry="8.5" fill="#a4b359" stroke="#1f1810" stroke-width="1.5"/>
+              <ellipse cx="35" cy="31" rx="2.5" ry="6.5" fill="#0a0a0a"/>
+              <ellipse cx="65" cy="31" rx="2.5" ry="6.5" fill="#0a0a0a"/>
+              <circle cx="33" cy="28" r="1.5" fill="#fff"/>
+              <circle cx="63" cy="28" r="1.5" fill="#fff"/>
+
+              <path d="M50 39 L46 34 L54 34 Z" fill="#c98a8a"/>
+              <g stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity=".85">
+                <line x1="28" y1="38" x2="8" y2="35"/><line x1="28" y1="42" x2="10" y2="44"/>
+                <line x1="72" y1="38" x2="92" y2="35"/><line x1="72" y1="42" x2="90" y2="44"/>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="hint" id="hint-text">Usá las flechas o WASD para explorar el jardín 💛</div>
+  <div class="pad" aria-hidden="true">
+    <button class="p-up" data-k="ArrowUp">▲</button>
+    <button class="p-left" data-k="ArrowLeft">◀</button>
+    <button class="p-down" data-k="ArrowDown">▼</button>
+    <button class="p-right" data-k="ArrowRight">▶</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const viewport = document.getElementById('viewport');
+  const worldLayer = document.getElementById('world');
+  const elementsHolder = document.getElementById('elements-holder');
+  const cat = document.getElementById('cat');
+  const morron = document.getElementById('morron');
+  const bubble = document.getElementById('bubble');
+  const bubbleMorron = document.getElementById('bubble-morron');
+  const hintText = document.getElementById('hint-text');
+
+  let screenW = window.innerWidth;
+  let scaleFactor = Math.max(0.75, Math.min(1.4, screenW / 390));
+
+  let mapW = viewport.clientWidth * 2;
+  let mapH = viewport.clientHeight * 2;
+
+  const templates = {
+    yellowFlowers: [
+      `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="28" stroke="#4a7c36" stroke-width="4"/><g><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(0 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(45 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(90 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(135 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(180 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(225 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(270 30 21)"/><ellipse cx="30" cy="13" rx="8" ry="14" fill="#ffdb4d" transform="rotate(315 30 21)"/><circle cx="30" cy="21" r="7" fill="#734919"/></g></g></svg>`,
+      `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="26" stroke="#3b662b" stroke-width="4.5"/><g><circle cx="30" cy="20" r="18" fill="#ffa700"/><circle cx="30" cy="20" r="14.5" fill="#ffd000"/><circle cx="30" cy="20" r="8.5" fill="#4d2c11"/></g></g></svg>`,
+      `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="24" stroke="#4a7c36" stroke-width="3.5"/><g><circle cx="30" cy="19" r="14" fill="#fff59d"/><circle cx="30" cy="19" r="10.5" fill="#ffee58"/><circle cx="30" cy="19" r="6.5" fill="#f57f17"/></g></g></svg>`,
+      `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="22" stroke="#2e7d32" stroke-width="3.5"/><g fill="#fbc02d"><circle cx="20" cy="20" r="9"/><circle cx="40" cy="20" r="9"/><circle cx="30" cy="10" r="9"/><circle cx="30" cy="30" r="9"/></g><circle cx="30" cy="20" r="7.5" fill="#fff59d"/></g></svg>`
+    ],
+    otherFlowers: [
+      `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="22" stroke="#2e7d32" stroke-width="3"/><g fill="#ff7043"><circle cx="20" cy="20" r="9"/><circle cx="40" cy="20" r="9"/><circle cx="30" cy="10" r="9"/><circle cx="30" cy="30" r="9"/></g><circle cx="30" cy="20" r="7" fill="#fff176"/></g></svg>`,
+      `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="25" stroke="#388e3c" stroke-width="3.5"/><g fill="#ba68c8"><circle cx="22" cy="22" r="8"/><circle cx="38" cy="22" r="8"/><circle cx="22" cy="34" r="8"/><circle cx="38" cy="34" r="8"/></g><circle cx="30" cy="28" r="7" fill="#fbc02d"/></g></svg>`
+    ],
+    trees: [
+      `<svg viewBox="0 0 120 180"><g class="sway"><rect x="46" y="85" width="28" height="95" rx="6" fill="#4a2e18"/><circle cx="60" cy="60" r="60" fill="#2e7d32"/><circle cx="30" cy="45" r="45" fill="#43a047"/><circle cx="90" cy="45" r="45" fill="#1b5e20"/><circle cx="60" cy="30" r="42" fill="#66bb6a"/></g></svg>`,
+      `<svg viewBox="0 0 120 180"><g class="sway"><rect x="48" y="80" width="24" height="100" rx="5" fill="#3a2312"/><polygon points="60,5 10,90 110,90" fill="#2d5a27"/><polygon points="60,25 20,90 100,90" fill="#386e30"/><polygon points="60,45 30,90 90,90" fill="#46823e"/></g></svg>`
+    ],
+    bushWithYellowFlowers: `<svg viewBox="0 0 100 65"><g class="sway"><ellipse cx="50" cy="45" rx="46" ry="20" fill="#2e7d32"/><ellipse cx="30" cy="35" rx="28" ry="19" fill="#43a047"/><ellipse cx="70" cy="35" rx="28" ry="19" fill="#388e3c"/><circle cx="25" cy="30" r="7" fill="#ffd700"/><circle cx="45" cy="25" r="6" fill="#ffee58"/><circle cx="70" cy="30" r="8" fill="#ffca28"/><circle cx="80" cy="40" r="5" fill="#fff59d"/><circle cx="35" cy="42" r="6" fill="#ffd700"/></g></svg>`,
+    catHouse: `<svg viewBox="0 0 120 120">
+      <g class="sway">
+        <ellipse cx="60" cy="110" rx="48" ry="10" fill="rgba(0,0,0,0.2)"/>
+        <rect x="22" y="48" width="76" height="58" rx="4" fill="#8c562b" stroke="#5e3818" stroke-width="3"/>
+        <line x1="22" y1="64" x2="98" y2="64" stroke="#5e3818" stroke-width="1.8"/>
+        <line x1="22" y1="80" x2="98" y2="80" stroke="#5e3818" stroke-width="1.8"/>
+        <line x1="22" y1="94" x2="98" y2="94" stroke="#5e3818" stroke-width="1.8"/>
+        <path d="M 43,106 L 43,72 C 43,60 77,60 77,72 L 77,106 Z" fill="#2b1704" stroke="#5e3818" stroke-width="2.5"/>
+        <polygon points="60,10 8,50 112,50" fill="#c0392b" stroke="#922b21" stroke-width="3.5" stroke-linejoin="round"/>
+        <polygon points="60,18 16,47 104,47" fill="#e74c3c"/>
+        <rect x="34" y="38" width="52" height="20" rx="4" fill="#fcf3cf" stroke="#b7950b" stroke-width="2.5"/>
+        <text x="60" y="53" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="13" fill="#784212" text-anchor="middle">MORITO</text>
+      </g>
+    </svg>`,
+
+    warningSign: `<svg viewBox="0 0 80 80">
+      <g class="sway">
+        <rect x="36" y="40" width="8" height="38" fill="#5e3818"/>
+        <polygon points="40,5 75,65 5,65" fill="#e74c3c" stroke="#78281f" stroke-width="3" stroke-linejoin="round"/>
+        <polygon points="40,14 66,58 14,58" fill="#f9e79f"/>
+        <text x="40" y="38" font-size="22" font-weight="900" fill="#78281f" text-anchor="middle">⚠️</text>
+        <text x="40" y="52" font-size="6.5" font-weight="800" fill="#78281f" text-anchor="middle">NO ACERCARSE</text>
+      </g>
+    </svg>`,
+
+    fishBowl: `<svg viewBox="0 0 40 40"><g class="sway"><circle cx="20" cy="22" r="16" fill="rgba(173,216,230,0.85)" stroke="#4682b4" stroke-width="2"/><ellipse cx="20" cy="8" rx="10" ry="3" fill="#b0e0e6" stroke="#4682b4" stroke-width="1.5"/><path d="M14 24 Q 20 18, 24 24 T 28 22 L 28 26 Z" fill="#ff7f50"/><circle cx="16" cy="22" r="1.5" fill="#fff"/></g></svg>`,
+    yarnBall: `<svg viewBox="0 0 40 40"><g class="sway"><circle cx="20" cy="20" r="15" fill="#ff4081"/><path d="M 8 16 Q 20 8 32 16 M 6 22 Q 20 30 34 22 M 14 6 Q 22 20 14 34" stroke="#f50057" stroke-width="2" fill="none"/><path d="M 28 30 Q 35 36 38 32" stroke="#ff4081" stroke-width="2.5" fill="none"/></g></svg>`,
+    cardboardBox: `<svg viewBox="0 0 50 40"><g class="sway"><rect x="5" y="15" width="40" height="22" fill="#d7ccc8" stroke="#8d6e63" stroke-width="2"/><polygon points="5,15 15,5 45,5 35,15" fill="#bcaaa4" stroke="#8d6e63" stroke-width="1.5"/><line x1="25" y1="5" x2="25" y2="15" stroke="#8d6e63" stroke-width="1.5"/></g></svg>`,
+    goldenSunflower: `<svg viewBox="0 0 60 60"><g class="sway"><line x1="30" y1="60" x2="30" y2="24" stroke="#ffd700" stroke-width="5"/><circle cx="30" cy="20" r="18" fill="#fffd70"/><circle cx="30" cy="20" r="14" fill="#ffb300"/><circle cx="30" cy="20" r="8" fill="#5d4037"/><text x="30" y="23" font-size="10" text-anchor="middle">✨</text></g></svg>`
+  };
+
+  function isOnRoad(x, y) {
+    const margin = 45 * scaleFactor; 
+    const isH = (y >= (mapH / 2 - margin)) && (y <= (mapH / 2 + margin));
+    const isV = (x >= (mapW / 2 - margin)) && (x <= (mapW / 2 + margin));
+    return isH || isV;
+  }
+
+  function createStaticItem(x, y, w, h, html, zY, extraClass = '', onClick = null) {
+    const item = document.createElement('div');
+    item.className = 'item-world ' + extraClass;
+    item.style.left = x + 'px';
+    item.style.top = y + 'px';
+    item.style.width = (w * scaleFactor) + 'px';
+    item.style.height = (h * scaleFactor) + 'px';
+    item.style.zIndex = Math.floor(zY);
+    item.innerHTML = html;
+    if(onClick) {
+      item.classList.add('clickable');
+      item.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        onClick();
+      });
+    }
+    elementsHolder.appendChild(item);
+    return item;
+  }
+
+  let houseClickCount = 0;
+  let houseYGlobal = 0;
+  let houseXGlobal = 0;
+  let morronX = 0;
+  let morronY = 0;
+
+  function buildMap() {
+    elementsHolder.innerHTML = '';
+    screenW = window.innerWidth;
+    scaleFactor = Math.max(0.75, Math.min(1.4, screenW / 390));
+
+    mapW = viewport.clientWidth * 2;
+    mapH = viewport.clientHeight * 2;
+    worldLayer.style.width = mapW + 'px';
+    worldLayer.style.height = mapH + 'px';
+
+    houseXGlobal = mapW * 0.22;
+    houseYGlobal = mapH * 0.35;
+    createStaticItem(houseXGlobal, houseYGlobal, 150, 135, templates.catHouse, houseYGlobal + 120, 'cat-house clickable', () => {
+      houseClickCount++;
+      if(houseClickCount === 1) showBubble("¡Es mi casa! 🏡");
+      else if(houseClickCount === 3) showBubble("¡Toc toc! 🐾");
+      else if(houseClickCount >= 5) {
+        showBubble("¡Zzz... Morito durmiendo! 😴");
+        houseClickCount = 0;
+      }
+    });
+
+    morronX = mapW * 0.65;
+    morronY = mapH * 0.35;
+    
+    createStaticItem(morronX - (50 * scaleFactor), morronY, 70, 70, templates.warningSign, morronY + 60, '', () => {
+      showBubble("Dice 'NO ACERCARSE'... 🤫");
+    });
+    
+    createStaticItem(morronX - (10 * scaleFactor), morronY + (10 * scaleFactor), 110, 75, templates.bushWithYellowFlowers, morronY + 80);
+
+    morron.style.left = (morronX + (45 * scaleFactor)) + 'px';
+    morron.style.top = (morronY + (45 * scaleFactor)) + 'px';
+    morron.style.zIndex = Math.floor(morronY + 70);
+
+    for (let x = 0; x < mapW; x += 180) {
+      const t1 = templates.trees[Math.floor(Math.random() * templates.trees.length)];
+      const t2 = templates.trees[Math.floor(Math.random() * templates.trees.length)];
+      createStaticItem(x, 10, 150, 210, t1, 50);
+      createStaticItem(x, mapH - 160, 150, 210, t2, mapH + 50);
+    }
+    for (let y = 0; y < mapH; y += 180) {
+      const t1 = templates.trees[Math.floor(Math.random() * templates.trees.length)];
+      const t2 = templates.trees[Math.floor(Math.random() * templates.trees.length)];
+      createStaticItem(10, y, 150, 210, t1, y + 140);
+      createStaticItem(mapW - 140, y, 150, 210, t2, y + 140);
+    }
+
+    const fixedSpots = [
+      { x: houseXGlobal + (85 * scaleFactor), y: houseYGlobal + (70 * scaleFactor), r: 95 * scaleFactor },
+      { x: morronX, y: morronY, r: 100 * scaleFactor },
+      { x: houseXGlobal + (175 * scaleFactor), y: houseYGlobal + (70 * scaleFactor), r: 55 * scaleFactor },
+      { x: mapW * 0.65, y: mapH * 0.75, r: 60 * scaleFactor },
+      { x: mapW * 0.35, y: mapH * 0.72, r: 70 * scaleFactor },
+      { x: mapW * 0.52, y: mapH * 0.78, r: 65 * scaleFactor }
+    ];
+    function farFromFixed(x, y, extra = 0) {
+      return fixedSpots.every(s => Math.hypot(x - s.x, y - s.y) > s.r + extra);
+    }
+
+    const bushSpots = [];
+    let bushAttempts = 0;
+    while(bushSpots.length < 6 && bushAttempts < 200) {
+      bushAttempts++;
+      const bx = 100 + Math.random() * (mapW - 200);
+      const by = 100 + Math.random() * (mapH - 200);
+      if(isOnRoad(bx, by) || !farFromFixed(bx, by, 25)) continue;
+      const tooClose = bushSpots.some(b => Math.hypot(bx - b.x, by - b.y) < 150);
+      if(tooClose) continue;
+      bushSpots.push({ x: bx, y: by });
+      createStaticItem(bx, by, 90, 60, templates.bushWithYellowFlowers, by + 50);
+    }
+
+    createStaticItem(houseXGlobal + (175 * scaleFactor), houseYGlobal + (70 * scaleFactor), 42, 42, templates.fishBowl, houseYGlobal + 100, '', () => {
+      showBubble("¡Glub glub! 🐟");
+    });
+
+    createStaticItem(mapW * 0.65, mapH * 0.75, 45, 45, templates.yarnBall, mapH * 0.75 + 40, '', () => {
+      showBubble("¡Miau! Mi lana favorita 🧶");
+    });
+
+    createStaticItem(mapW * 0.35, mapH * 0.72, 65, 55, templates.cardboardBox, mapH * 0.72 + 45, 'clickable', () => {
+      showBubble("Si quepo, me meeeeto 📦");
+    });
+
+    createStaticItem(mapW * 0.52, mapH * 0.78, 55, 55, templates.goldenSunflower, mapH * 0.78 + 50, '', () => {
+      showBubble("✨ ¡Girasol Mágico Dorado! 🌟");
+      cat.style.filter = "drop-shadow(0 0 12px gold)";
+      setTimeout(() => cat.style.filter = "none", 4000);
+    });
+
+    // FLORES MÁS GRANDES Y ARMÓNICAS (Tamaño aumentado sustancialmente para guardar proporción con el gato y la casa)
+    const flowerSpots = [];
+    let flowers = 0;
+    let flowerAttempts = 0;
+    const targetFlowers = 120; 
+    while(flowers < targetFlowers && flowerAttempts < 4000) {
+      flowerAttempts++;
+      const fx = 40 + Math.random() * (mapW - 80);
+      const fy = 40 + Math.random() * (mapH - 80);
+      if(isOnRoad(fx, fy) || !farFromFixed(fx, fy, 5)) continue;
+      const tooCloseToFlower = flowerSpots.some(f => Math.hypot(fx - f.x, fy - f.y) < 45); 
+      if(tooCloseToFlower) continue;
+
+      const sz = (42 + Math.random() * 20);
+      const isYellow = Math.random() < 0.88;
+      let svg = isYellow
+        ? templates.yellowFlowers[Math.floor(Math.random() * templates.yellowFlowers.length)]
+        : templates.otherFlowers[Math.floor(Math.random() * templates.otherFlowers.length)];
+
+      const flowerItem = createStaticItem(fx, fy, sz, sz, svg, fy + sz, '', null);
+      flowerSpots.push({ x: fx, y: fy });
+      flowerItem.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        showBubble('¡Flor hermosa! 🌻');
+      });
+      flowers++;
+    }
+
+    const butterfly = document.createElement('div');
+    butterfly.className = 'butterfly';
+    butterfly.style.left = (mapW * 0.4) + 'px';
+    butterfly.style.top = (mapH * 0.3) + 'px';
+    butterfly.innerHTML = `<svg viewBox="0 0 30 30"><path d="M15 15 C5 0 0 10 12 15 C0 20 5 30 15 15 Z" fill="#ffeb3b"/><path d="M15 15 C25 0 30 10 18 15 C30 20 25 30 15 15 Z" fill="#ffa700"/><circle cx="15" cy="15" r="2" fill="#3e2723"/></svg>`;
+    butterfly.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      showBubble("¡Atrapé la mariposa! 🦋");
+    });
+    elementsHolder.appendChild(butterfly);
+  }
+
+  let posX = mapW / 2;
+  let posY = mapH / 2;
+  let morronSpawned = false;
+  let idleTime = 0;
+  let isBreadMode = false;
+  let bubbleTimeout;
+  let rafId = null;
+  
+  const keys = {};
+  const SPEED = 280;
+
+  function triggerMorronBubble() {
+    bubbleMorron.classList.add('show');
+    setTimeout(() => bubbleMorron.classList.remove('show'), 2000);
+  }
+
+  function updateCamera() {
+    const vW = viewport.clientWidth;
+    const vH = viewport.clientHeight;
+    let camX = posX - vW / 2;
+    let camY = posY - vH / 2;
+
+    camX = Math.max(0, Math.min(camX, mapW - vW));
+    camY = Math.max(0, Math.min(camY, mapH - vH));
+
+    worldLayer.style.transform = `translate(${-camX}px, ${-camY}px)`;
+  }
+
+  function setPos(x, y) {
+    posX = Math.max(80, Math.min(x, mapW - 80));
+    posY = Math.max(80, Math.min(y, mapH - 80));
+    cat.style.left = posX + 'px';
+    cat.style.top = posY + 'px';
+    cat.style.zIndex = Math.floor(posY);
+
+    updateCamera();
+
+    const distMorron = Math.hypot(posX - (morronX + (45 * scaleFactor)), posY - (morronY + (45 * scaleFactor)));
+    if (distMorron < 110 * scaleFactor) {
+      if(!morronSpawned) {
+        morron.classList.add('visible');
+        triggerMorronBubble();
+        morronSpawned = true;
+      }
+      hintText.innerText = "⚠️ ¡Morrón se escondió en el arbusto!";
+    } else {
+      if(distMorron > 170 * scaleFactor && morronSpawned) {
+        morron.classList.remove('visible');
+        morronSpawned = false;
+      }
+      if (Math.hypot(posX - (houseXGlobal + (85 * scaleFactor)), posY - (houseYGlobal + (100 * scaleFactor))) < 80 * scaleFactor) {
+        hintText.innerText = "🏡 Estás cerquita de la casa de Morito";
+      } else if (isBreadMode) {
+        hintText.innerText = "🍞 Morito está en modo pan (Zzz...). Movete para despertarlo 💛";
+      } else {
+        hintText.innerText = "Usá las flechas o WASD para explorar el jardín 💛";
+      }
+    }
+  }
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+
+    let dx = 0, dy = 0;
+    if(keys['ArrowUp'] || keys['w'] || keys['W']) dy -= 1;
+    if(keys['ArrowDown'] || keys['s'] || keys['S']) dy += 1;
+    if(keys['ArrowLeft'] || keys['a'] || keys['A']) dx -= 1;
+    if(keys['ArrowRight'] || keys['d'] || keys['D']) dx += 1;
+
+    const moving = dx !== 0 || dy !== 0;
+
+    if(moving){
+      if(isBreadMode) {
+        isBreadMode = false;
+      }
+      idleTime = 0;
+      cat.classList.toggle('walking', true);
+
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len; dy /= len;
+
+      setPos(posX + dx * SPEED * dt, posY + dy * SPEED * dt);
+
+      if (Math.abs(dy) > Math.abs(dx)) {
+        if (dy > 0) {
+          cat.setAttribute('data-dir', 'front');
+        } else {
+          cat.setAttribute('data-dir', 'back');
+        }
+      } else {
+        cat.setAttribute('data-dir', 'side');
+        const viewSide = cat.querySelector('.view-side');
+        if (dx > 0) {
+          viewSide.style.transform = 'scaleX(1)';
+        } else if (dx < 0) {
+          viewSide.style.transform = 'scaleX(-1)';
+        }
+      }
+    } else {
+      cat.classList.toggle('walking', false);
+      if(!isBreadMode) {
+        idleTime += dt;
+        if(idleTime > 2.0) {
+          isBreadMode = true;
+          cat.setAttribute('data-dir', 'bread');
+          hintText.innerText = "🍞 Morito entró en modo pan. Movete para despertarlo 💛";
+        }
+      }
+    }
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  buildMap();
+  setPos(mapW / 2, mapH / 2);
+  showBubble('¡Hola Sami! 🖤');
+  rafId = requestAnimationFrame(loop);
+
+  window.addEventListener('resize', ()=>{
+    buildMap();
+    setPos(mapW / 2, mapH / 2);
+  });
+  window.addEventListener('orientationchange', ()=>{
+    setTimeout(()=>{ buildMap(); setPos(mapW / 2, mapH / 2); }, 150);
+  });
+  document.addEventListener('gesturestart', (e)=> e.preventDefault(), { passive: false });
+
+  window.addEventListener('keydown', (e)=>{
+    const key = e.key;
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D'].includes(key)){
+      e.preventDefault();
+      keys[key] = true;
+    }
+  }, {passive:false});
+
+  window.addEventListener('keyup', (e)=>{
+    keys[e.key] = false;
+  });
+
+  document.querySelectorAll('.pad button').forEach(btn=>{
+    const k = btn.dataset.k;
+    const on = (e)=>{ e.preventDefault(); keys[k]=true; };
+    const off = (e)=>{ e.preventDefault(); keys[k]=false; };
+    btn.addEventListener('pointerdown', on);
+    btn.addEventListener('pointerup', off);
+    btn.addEventListener('pointerleave', off);
+    btn.addEventListener('pointercancel', off);
+  });
+
+  function showBubble(text){
+    bubble.innerText = text;
+    bubble.classList.add('show');
+    clearTimeout(bubbleTimeout);
+    bubbleTimeout = setTimeout(()=> bubble.classList.remove('show'), 1500);
+  }
+
+  cat.addEventListener('pointerdown', (e)=>{ 
+    e.stopPropagation(); 
+    const meows = ["🖤", "¡Miau! 😸", " Purrr... 🐱", "¡Feliz 21! 🌻"];
+    showBubble(meows[Math.floor(Math.random() * meows.length)]); 
+  });
+
+  morron.addEventListener('pointerdown', (e)=>{
+    e.stopPropagation();
+    triggerMorronBubble();
+  });
+
+})();
+</script>
+</body>
+</html>
